@@ -55,6 +55,7 @@ nest-asyncio @ file:///C:/b/abs_65d6lblmoi/croot/nest-asyncio_1708532721305/work
 notebook==7.2.2
 notebook_shim==0.2.4
 numpy==2.1.2
+opencv-python==4.10.0.84
 overrides==7.7.0
 packaging @ file:///C:/b/abs_c3vlh0z4jw/croot/packaging_1720101866539/work
 pandocfilters==1.5.1
