@@ -1,6 +1,7 @@
 import cv2 as cv
 import numpy as np
-img_watermarked = cv.imread('Images/yv.jpg')
+img_watermarked = cv.imread('example-images\\4.1.03.tiff')
+print(img_watermarked.shape)
 img_watermarked = cv.resize(img_watermarked, (512,512), interpolation=cv.INTER_CUBIC)
 cv.imshow('Watermarked Image', img_watermarked)
 
@@ -45,8 +46,7 @@ cv.imshow('GammaCorrectedImage1', output_image_gammaCorrection1)
 output_image_gammaCorrection = gammaCorrection(img_watermarked, 1.5)
 cv.imshow('GammaCorrectedImage', output_image_gammaCorrection)
 
-
-# Histogram Equalization
+""" Histogram Equalization
 # def histogram_equalization(image):
 #     image_eq = np.array(image, dtype = np.uint8)
 #     histogram = np.zeros(256, dtype=np.int32)
@@ -69,8 +69,22 @@ cv.imshow('GammaCorrectedImage', output_image_gammaCorrection)
 
 # histEqualized_img = histogram_equalization(img_watermarked)
 # cv.imshow('HistEqualized_Image', histEqualized_img)
+"""
 
+def histogram_equalization(img):
+   # convert the image from BGR to YCrCb color space
+   ycrcb_img = cv.cvtColor(img, cv.COLOR_BGR2YCrCb)
+   # splitting the Y, Cr and Cb channels
+   y, cr, cb = cv.split(ycrcb_img)
+   # applying histogram equalization on Y channel
+   y_eq = cv.equalizeHist(y)
+   # merging the equalized Y channel back with Cr and Cb channels
+   ycrcb_eq = cv.merge([y_eq, cr, cb])
+   # converting the image back to BGR color space
+   equalized_img = cv.cvtColor(ycrcb_img, cv.COLOR_YCrCb2BGR)
+   return equalized_img
 
+cv.imshow("hist_equ_img.jpg", histogram_equalization(img_watermarked))
 # Laplacian Sharpening
 def lapSharpening(img):
     blue, green, red = cv.split(img)
@@ -84,7 +98,7 @@ def lapSharpening(img):
     sharpened_img = img - filtered_image
     return filtered_image
 
-sharpened_image = lapSharpening(img_watermarked)
-cv.imshow('SharpenedImage', sharpened_image)    
+# sharpened_image = lapSharpening(img_watermarked)
+# cv.imshow('SharpenedImage', sharpened_image)    
 cv.waitKey(0)
 cv.destroyAllWindows()
