@@ -8,7 +8,7 @@ setup(
     packages=find_packages(),
     entry_points={
         'console_scripts': [
-            'watermark2dwt = my_project.main:main',  # This defines the terminal command
+            'mycommand = my_project.main:main',  # This defines the terminal command
         ],
     },
 )
