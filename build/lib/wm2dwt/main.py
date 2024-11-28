@@ -3,11 +3,11 @@
 import argparse
 import os
 import cv2, numpy as np
-from utils.dwt import *
-from utils.zig_zag import *
-from utils.dct import *
+from wm2dwt.utils.dwt import *
+from wm2dwt.utils.zig_zag import *
+from wm2dwt.utils.dct import *
 
-def main():
+def wm2dwt():
     # Set up argument parsing for a single argument (image path)
     """parser = argparse.ArgumentParser(description="Command-line tool for image processing.")
     parser.add_argument("image_path", type=str, help="Path to the image file")
@@ -29,8 +29,10 @@ def main():
         raise ValueError("The provided file could not be read as an image.")"""
 
     print("Image loaded successfully. Proceeding with processing...")
-    image = cv2.imread('example-images//vishal.jpg')
-    image = cv2.resize(image, (512,512), interpolation=cv2.INTER_LINEAR)
+    
+    """
+    image = cv2.imread('example-images\\4.1.03.tiff')
+    # image = cv2.resize(image, (512,512), interpolation=cv2.INTER_LINEAR)
     print("size of image is : ", image.shape)
     # ycrcb_img = cv2.cvtColor(image, cv2.COLOR_BGR2YCrCb)
     # Y, Cr, Cb = cv2.split(ycrcb_img)
@@ -74,6 +76,8 @@ def main():
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-# Ensure main() runs when this script is called directly
+    """
+    
+# Ensure wm2dwt() runs when this script is called directly
 if __name__ == "__main__":
-    main()
+    wm2dwt()

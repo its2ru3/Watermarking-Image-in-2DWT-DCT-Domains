@@ -1,0 +1,2 @@
+[console_scripts]
+wm = wm2dwt.main:wm2dwt

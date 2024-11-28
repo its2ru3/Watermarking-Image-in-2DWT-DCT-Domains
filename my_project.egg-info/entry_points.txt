@@ -1,0 +1,2 @@
+[console_scripts]
+mycommand = my_project.main:main

@@ -3,12 +3,16 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="my_project",
+    name="wm2dwt",
     version="0.1",
     packages=find_packages(),
+    install_requires=[
+        # add dependencies here
+        # eg 'numpy>=1.11.1'
+    ],
     entry_points={
         'console_scripts': [
-            'mycommand = my_project.main:main',  # This defines the terminal command
-        ],
+            'wm = wm2dwt.main:wm2dwt',  # This defines the terminal command
+        ],  
     },
 )
