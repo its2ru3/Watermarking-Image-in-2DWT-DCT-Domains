@@ -1,9 +1,6 @@
 import cv2 as cv
 import numpy as np
 
-# img_watermarked = cv.imread('Images/Watermarked.jpg')
-# cv.imshow('Watermarked Image', img_watermarked)
-
 #Rotation
 def rotate_func(Y_new, rotation_angle, rotation_Point=None):
     (height, width) = Y_new.shape[:2]
@@ -13,9 +10,6 @@ def rotate_func(Y_new, rotation_angle, rotation_Point=None):
     rotation_Mat = cv.getRotationMatrix2D(rotation_Point, rotation_angle, 1.0)
     dimensions = (width, height)
     return cv.warpAffine(temp_img, rotation_Mat, dimensions)  
-
-# rotated_image = rotate_func(Y_new, 45)
-# cv.imshow('Rotated', rotated_image)
 
 #Cropping surrounding pixel values by x%
 def cropping(Y_new):

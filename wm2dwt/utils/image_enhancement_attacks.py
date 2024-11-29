@@ -1,12 +1,5 @@
 import cv2 as cv
 import numpy as np
-# img_watermarked = cv.imread('example-images\\4.1.03.tiff')
-# print(img_watermarked.shape)
-# img_watermarked = cv.resize(img_watermarked, (512,512), interpolation=cv.INTER_CUBIC)
-# cv.imshow('Watermarked Image', img_watermarked)
-
-# img_watermarked = cv.resize(img_watermarked, (512,512), interpolation=cv.INTER_CUBIC)
-# (height, width) = img_watermarked.shape[:2]
 
 # Bit-Plane Removal(x bits)
 def bitPlaneRemoval(Y_new, bits):
@@ -17,10 +10,6 @@ def bitPlaneRemoval(Y_new, bits):
          temp_img[row, column] = (((temp_img[row, column] >> bits) << bits))
    return temp_img
 
-# output_image_bitSlicing = bitPlaneRemoval(img_watermarked, 5)
-# cv.imshow('BitPlaneRemoved', output_image_bitSlicing)
-
-
 # Gamma Correction
 def gammaCorrection(Y_new, gamma):
    temp_img = np.copy(Y_new)
@@ -28,11 +17,6 @@ def gammaCorrection(Y_new, gamma):
    temp_img = pow(temp_img, gamma)
    temp_img = (temp_img * 255).astype(np.uint8)     
    return temp_img
-
-# output_image_gammaCorrection1 = gammaCorrection(img_watermarked, 0.5)
-# cv.imshow('GammaCorrectedImage1', output_image_gammaCorrection1)
-# output_image_gammaCorrection = gammaCorrection(img_watermarked, 1.5)
-# cv.imshow('GammaCorrectedImage', output_image_gammaCorrection)
 
 ## Histogram Equalization (old)
 def histogram_equalization(Y_new):
@@ -57,7 +41,7 @@ def histogram_equalization(Y_new):
     return image_eq
 
 
-# histEqualized_img = histogram_equalization(img_watermarked)
+"""# histEqualized_img = histogram_equalization(img_watermarked)
 # cv.imshow('HistEqualized_Image', histEqualized_img)
 
 
@@ -72,9 +56,7 @@ def histogram_equalization(Y_new):
 #    ycrcb_eq = cv.merge([y_eq, cr, cb])
 #    # converting the image back to BGR color space
 #    equalized_img = cv.cvtColor(ycrcb_img, cv.COLOR_YCrCb2BGR)
-#    return equalized_img
-
-# cv.imshow("hist_equ_img.jpg", histogram_equalization(img_watermarked))
+#    return equalized_img """
 
 # Laplacian Sharpening
 def lapSharpening(Y_new):
@@ -85,8 +67,6 @@ def lapSharpening(Y_new):
     filtered_img = cv.filter2D(temp_img, -1, laplacian_kernel, borderType=cv.BORDER_CONSTANT)
     sharpened_img = Y_new - filtered_img
     return sharpened_img
-
-# sharpened_image = lapSharpening(img_watermarked)
-# cv.imshow('SharpenedImage', sharpened_image)    
+  
 cv.waitKey(0)
 cv.destroyAllWindows()

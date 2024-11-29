@@ -1,8 +1,5 @@
 import cv2 as cv
 import numpy as np
-# img_watermarked = cv.imread('Images/Flower.jpg')
-# img_watermarked = cv.resize(img_watermarked, (512,512), interpolation=cv.INTER_CUBIC)
-# cv.imshow('Watermarked Image', img_watermarked)
 
 # Average Filter (mask size = 3X3)
 def avgFilter(Y_new):
@@ -14,9 +11,6 @@ def avgFilter(Y_new):
     temp_img = cv.filter2D(temp_img, -1, kernel, borderType=cv.BORDER_CONSTANT)
     temp_img = (temp_img*255).astype(np.uint8)
     return temp_img
-# filtered_img = avgFilter(img_watermarked)
-# cv.imshow('AvgFilteredImg', filtered_img)
-
 
 # Median Filter (mask size = 3X3)
 def medianFilter(Y_new):
@@ -40,10 +34,6 @@ def medianFilter(Y_new):
     filtered_img = filtered_img.astype(np.uint8)
     return filtered_img
 
-# filtered_img = medianFilter(img_watermarked)
-# cv.imshow('MedianFilteredImg', filtered_img)
-
-
 # Gaussian Filter (mask size = 3X3)
 def gaussianFilter1(Y_new):
     temp_img = np.copy(Y_new)
@@ -54,10 +44,6 @@ def gaussianFilter1(Y_new):
     temp_img = cv.filter2D(temp_img, -1, kernel, borderType=cv.BORDER_CONSTANT)
     temp_img = (temp_img*255).astype(np.uint8)
     return temp_img
-
-# filtered_img = gaussianFilter1(img_watermarked)
-# cv.imshow('Gauss3FilteredImg', filtered_img)
-
 
 # Gaussian Filter (mask size = 5X5)
 def gaussianFilter2(Y_new):
@@ -71,10 +57,6 @@ def gaussianFilter2(Y_new):
     temp_img = cv.filter2D(temp_img, -1, kernel, borderType=cv.BORDER_CONSTANT)
     temp_img = (temp_img*255).astype(np.uint8)
     return temp_img
-
-# filtered_img = gaussianFilter2(img_watermarked)
-# cv.imshow('Gauss5FilteredImg', filtered_img)
-
 
 cv.waitKey(0)
 cv.destroyAllWindows()
