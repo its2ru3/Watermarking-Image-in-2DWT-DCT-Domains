@@ -128,13 +128,6 @@ def wm2dwt():
 
     # cv2.imshow("watermarked_img.jpeg", Y_new.astype(np.uint8))
     W_dec = decode(Y_new, len_w, L)
-<<<<<<< HEAD
-    print("Decoded watermark is:\n", W_dec)
-
-    print("bcr is ", bcr(W_enc, W_dec))
-
-    print("psnr to Y is ", psnr(Y, Y_new))
-=======
     print("Decoded watermark is: ", W_dec)
     print("BCR of watermarked image is: ", bcr(W_enc, W_dec))
     print("PSNR of watermarked image is: ", psnr(Y, Y_new))
@@ -142,7 +135,6 @@ def wm2dwt():
     atk_type = "filtering_attack"
     attacks(Y_new, len_w, W_enc,atk_type)
 
->>>>>>> c8c5afc00992c2a85d9475e3b8b0ff9a97d76b89
     cv2.waitKey(0)
     cv2.destroyAllWindows
     
