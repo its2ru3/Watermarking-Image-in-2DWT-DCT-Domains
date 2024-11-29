@@ -100,8 +100,12 @@ def wm2dwt():
     print("size of image is : ", image.shape)
     ycrcb_img = cv2.cvtColor(image, cv2.COLOR_BGR2YCrCb)
     Y, Cr, Cb = cv2.split(ycrcb_img)
+    cv2.imshow("gray_image_wm.jpeg", Y)
     Y = Y.astype(np.float64)
+<<<<<<< HEAD
     cv2.imshow("gray_image_wm.jpeg", Y.astype(np.uint8))
+=======
+>>>>>>> 425ae828eda4615d29b7e4ec0f6a8889c73bdcbf
 
     alpha = args.alpha
     len_w = args.len_w
