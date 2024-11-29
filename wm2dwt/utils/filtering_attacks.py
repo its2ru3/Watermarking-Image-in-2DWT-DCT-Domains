@@ -12,7 +12,7 @@ def avgFilter(Y_new):
     temp_img = (temp_img*255).astype(np.uint8)
     return temp_img
 
-# Median Filter (mask size = 3X3)
+# Median Filter (mask size = 3X3) 
 def medianFilter(Y_new):
     temp_img = np.copy(Y_new)
     (h,w) = temp_img.shape[:2]
