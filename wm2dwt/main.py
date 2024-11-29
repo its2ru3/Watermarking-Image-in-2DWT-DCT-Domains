@@ -101,7 +101,7 @@ def wm2dwt():
     ycrcb_img = cv2.cvtColor(image, cv2.COLOR_BGR2YCrCb)
     Y, Cr, Cb = cv2.split(ycrcb_img)
     Y = Y.astype(np.float64)
-    # cv2.imshow("gray_image_wm.jpeg", Y)
+    cv2.imshow("gray_image_wm.jpeg", Y.astype(np.uint8))
 
     alpha = args.alpha
     len_w = args.len_w
@@ -109,7 +109,7 @@ def wm2dwt():
     Y_new, W_enc = encode(Y, alpha, len_w, L)
     print("Random watermark is: ", W_enc)
 
-    # cv2.imshow("watermarked_img.jpeg", Y_new.astype(np.uint8))
+    cv2.imshow("watermarked_img.jpeg", Y_new.astype(np.uint8))
     W_dec = decode(Y_new, len_w, L)
     print("Decoded watermark is: ", W_dec)
 
