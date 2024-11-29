@@ -4,7 +4,7 @@ import numpy as np
 # Average Filter (mask size = 3X3)
 def avgFilter(Y_new):
     temp_img = np.copy(Y_new)
-    temp_img = temp_img.astype(np.float32)/255.0
+    temp_img = temp_img/255.0
     kernel = np.array([[1/9,1/9,1/9],
                        [1/9,1/9,1/9],
                        [1/9,1/9,1/9]])
