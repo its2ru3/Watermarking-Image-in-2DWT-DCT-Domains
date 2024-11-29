@@ -9,6 +9,7 @@ from utils.performance_metrices import *
 from utils.filtering_attacks import *
 from utils.geometrical_attacks import *
 from utils.image_enhancement_attacks import *
+from utils.noise_attacks import *
 
 def encode(Y, alpha, len_w, L=2):
     m,n = Y.shape
@@ -55,13 +56,25 @@ def decode(Y_new, len_w, L=2):
     return W_dec
 
 def attacks(Y_new, len_w, W, atk_type):
+    Y_atks = []
+    W_decs = []
     if(atk_type=="filtering_attack"):
-        Y_atk = avgFilter(Y_new)
-        cv2.imshow("avgFilter_atk.jpg", Y_atk)
-        W_dec = decode(Y_atk, len_w)
-    print("BCR of attacked image is: ", bcr(W, W_dec))
-    print("PSNR of attacked image is: ", psnr(Y_new, Y_atk))
-    print("SSIM of attacked image is: ", ssim(Y_new, Y_atk))
+        Y_atks.append(avgFilter(Y_new))
+        # cv2.imshow("avgFilter_atk.jpg", Y_atk)
+        W_decs.append(decode(Y_atks[0], len_w))
+        print("Watermark from attacked image: \n", W_dec)
+        print("BCR of attacked image is: ", bcr(W, W_dec))
+        print("PSNR of attacked image is: ", psnr(Y_new, Y_atk))
+        print("SSIM of attacked image is: ", ssim(Y_new, Y_atk))
+        Y_atk_median = medianFilter(Y_new)
+        # cv2.imshow("Median_atk.jpg", Y_atk_median)
+        W_dec = decode(Y_atk_median, len_w)
+        print("Watermark from attacked image: \n", W_dec)
+        print("Median attack: ")
+        print("BCR of attacked image is: ", bcr(W, W_dec))
+        print("PSNR of attacked image is: ", psnr(Y_new, Y_atk_median))
+        print("SSIM of attacked image is: ", ssim(Y_new, Y_atk_median))
+    
 
 def wm2dwt():
     # Set up argument parsing for a single argument (image path)
@@ -70,7 +83,7 @@ def wm2dwt():
     parser.add_argument("-a", type=str, default=None, metavar="atk", help="Type of attack to check on the image")
     parser.add_argument("-l", type=int, default=2, metavar="L", help="Level of DWT to use for embedding the watermark")
     parser.add_argument("--alpha", type=int, default=0.1, metavar="alpha", help="Gain index for the watermark")
-    parser.add_argument("-z","--len_w", type=int, default=128, metavar="len_w", help="length of watermark")
+    parser.add_argument("-z","--len_w", type=int, default=64, metavar="len_w", help="length of watermark")
 
     try:
         args = parser.parse_args()
@@ -104,7 +117,7 @@ def wm2dwt():
     print("size of image is : ", image.shape)
     ycrcb_img = cv2.cvtColor(image, cv2.COLOR_BGR2YCrCb)
     Y, Cr, Cb = cv2.split(ycrcb_img)
-    cv2.imshow("gray_image_wm.jpeg", Y)
+    # cv2.imshow("gray_image_wm.jpeg", Y)
     Y = Y.astype(np.float64)
 
     alpha = args.alpha
@@ -113,13 +126,14 @@ def wm2dwt():
     Y_new, W_enc = encode(Y, alpha, len_w, L)
     print("Random watermark is: ", W_enc)
 
-    cv2.imshow("watermarked_img.jpeg", Y_new.astype(np.uint8))
+    # cv2.imshow("watermarked_img.jpeg", Y_new.astype(np.uint8))
     W_dec = decode(Y_new, len_w, L)
     print("Decoded watermark is: ", W_dec)
     print("BCR of watermarked image is: ", bcr(W_enc, W_dec))
     print("PSNR of watermarked image is: ", psnr(Y, Y_new))
 
-    attacks(Y_new, len_w, W_enc)
+    atk_type = "filtering_attack"
+    attacks(Y_new, len_w, W_enc,atk_type)
 
     cv2.waitKey(0)
     cv2.destroyAllWindows
