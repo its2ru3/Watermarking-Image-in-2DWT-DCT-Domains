@@ -40,8 +40,8 @@ def ssim(I1: np.ndarray, I2: np.ndarray) -> float:
     # SSIM calculation
     SSIM = ( (2*mu1*mu2 + C1) * (2*sigma12 + C2) ) / ( (mu1**2 + mu2**2 + C1) * (sigma1_sqr + sigma2_sqr + C2) )
     SSIM = np.clip(SSIM,0,1) # Ensure SSIM is within [0, 1]
-    print(mu1, mu2, sigma1_sqr, sigma2_sqr, sigma12)
-    print(SSIM)
+    # print(mu1, mu2, sigma1_sqr, sigma2_sqr, sigma12)
+    # print(SSIM)
     return SSIM 
 
 def bcr(W: np.ndarray, W_: np.ndarray) -> float:
