@@ -11,7 +11,7 @@ def rotate_func(Y_new, rotation_angle, rotation_Point=None):
     dimensions = (width, height)
     return cv.warpAffine(temp_img, rotation_Mat, dimensions)  
 
-#Cropping surrounding pixel values by x%
+#Cropping surrounding pixel values by 15%
 def cropping(Y_new):
     temp_img = np.copy(Y_new)
     (height, width) = Y_new.shape[:2]

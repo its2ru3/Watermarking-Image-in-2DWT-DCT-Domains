@@ -1,6 +1,6 @@
 # my_project/main.py
 import argparse
-import os
+import os, csv
 import cv2, numpy as np
 from utils.zig_zag import *
 from utils.dct import *
@@ -10,11 +10,12 @@ from utils.filtering_attacks import *
 from utils.geometrical_attacks import *
 from utils.image_enhancement_attacks import *
 from utils.noise_attacks import *
+from utils.jpeg_compression import *
 
 def encode(Y, alpha, len_w, L=2):
     m,n = Y.shape
     dwt_2l = dwt(Y, L) 
-    ll2 = dwt_2l[0:m//4, 0:n//4]
+    ll2 = dwt_2l[0:m//2**L, 0:n//2**L]
     ll2_and_zig_zag = zig_zag(ll2)
 
     v1 = ll2_and_zig_zag[0::2]
@@ -26,16 +27,20 @@ def encode(Y, alpha, len_w, L=2):
     v1_w=np.copy(dct_v1)
     v2_w=np.copy(dct_v2)
     #here
-    v1_w[:len_w] = 0.5*(dct_v1[:len_w] + dct_v2[:len_w]) + alpha*W
-    v2_w[:len_w] = 0.5*(dct_v1[:len_w] + dct_v2[:len_w]) - alpha*W
+    v1_w[-len_w:] = 0.5*(dct_v1[-len_w:] + dct_v2[-len_w:]) + alpha*W
+    v2_w[-len_w:] = 0.5*(dct_v1[-len_w:] + dct_v2[-len_w:]) - alpha*W
+
+    # v1_w[-len_w:] = 0.5*(dct_v1[-len_w:] + dct_v2[-len_w:]) + alpha*W
+    # v2_w[-len_w:] = 0.5*(dct_v1[-len_w:] + dct_v2[-len_w:]) - alpha*W
+
     idct_v1 = idct(v1_w)
     idct_v2 = idct(v2_w)
     ll2_and_zig_zag_new = np.zeros(2*z)
     ll2_and_zig_zag_new[0::2]=idct_v1
     ll2_and_zig_zag_new[1::2]=idct_v2
 
-    ll2_new = zag_zig(ll2_and_zig_zag_new, m//4, n//4)
-    dwt_2l[0:m//4, 0:n//4] = ll2_new
+    ll2_new = zag_zig(ll2_and_zig_zag_new, m//2**L, n//2**L)
+    dwt_2l[0:m//2**L, 0:n//2**L] = ll2_new
     Y_new = idwt(dwt_2l, L)
     return Y_new, W
 
@@ -43,7 +48,7 @@ def decode(Y_new, len_w, L=2):
     m,n = Y_new.shape
     dwt_2l = dwt(Y_new, L) 
 
-    ll2 = dwt_2l[0:m//4, 0:n//4]
+    ll2 = dwt_2l[0:m//2**L, 0:n//2**L]
     ll2_and_zig_zag = zig_zag(ll2)
 
     v1 = ll2_and_zig_zag[0::2]
@@ -51,29 +56,55 @@ def decode(Y_new, len_w, L=2):
     dct_v1 = dct(v1)
     dct_v2 = dct(v2)
     #here
-    W_=dct_v1[:len_w] - dct_v2[:len_w]
-    W_dec = np.where(W_ < 0, -1, np.where(W_ > 0, 1, 0))
+    W_=dct_v1[-len_w:] - dct_v2[-len_w:]
+    # print("watermark unnormalised is: \n", W_)
+    W_dec = np.where(W_ <= 0, -1, np.where(W_ > 0, 1, 0))
     return W_dec
 
 def attacks(Y_new, len_w, W, atk_type):
-    Y_atks = []
-    W_decs = []
+    Y_atks = {}
+    W_decs = {}
     if(atk_type=="filtering_attack"):
-        Y_atks.append(avgFilter(Y_new))
-        # cv2.imshow("avgFilter_atk.jpg", Y_atk)
-        W_decs.append(decode(Y_atks[0], len_w))
-        print("Watermark from attacked image: \n", W_dec)
-        print("BCR of attacked image is: ", bcr(W, W_dec))
-        print("PSNR of attacked image is: ", psnr(Y_new, Y_atk))
-        print("SSIM of attacked image is: ", ssim(Y_new, Y_atk))
-        Y_atk_median = medianFilter(Y_new)
-        # cv2.imshow("Median_atk.jpg", Y_atk_median)
-        W_dec = decode(Y_atk_median, len_w)
-        print("Watermark from attacked image: \n", W_dec)
-        print("Median attack: ")
-        print("BCR of attacked image is: ", bcr(W, W_dec))
-        print("PSNR of attacked image is: ", psnr(Y_new, Y_atk_median))
-        print("SSIM of attacked image is: ", ssim(Y_new, Y_atk_median))
+        Y_atks["avgFilter"] = avgFilter(Y_new)
+        W_decs["avgFilter"] = decode(Y_atks["avgFilter"], len_w)
+
+        Y_atks["medianFilter"] = medianFilter(Y_new)
+        W_decs["medianFilter"] = decode(Y_atks["medianFilter"], len_w)
+
+        for index, (key, value) in enumerate(Y_atks.items()):
+            print("\n", key)
+            print("Watermark from attacked image: \n", W_dec)
+            print("BCR of attacked image is: ", bcr(W, W_decs[key]))
+            print("PSNR of attacked image is: ", psnr(Y_new, value))
+            print("SSIM of attacked image is: ", ssim(Y_new, value))
+    
+    Y_atk_gaussian = gaussianFilter2(Y_new)
+    print("datatype of gaussian attacked image is: ", Y_atk_gaussian.dtype)
+    # cv2.imshow("Median_atk.jpg", Y_atk_median)
+    W_dec = decode(Y_atk_gaussian, len_w)
+    csv_file_path = 'gaussian_atked_image.csv'
+    with open(csv_file_path, 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerows(Y_atk_gaussian)
+    print("Watermark from attacked image: \n", W_dec)
+    print("Gaussian attack: ")
+    print("BCR of attacked image is: ", bcr(W, W_dec))
+    print("PSNR of attacked image is: ", psnr(Y_new, Y_atk_gaussian))
+    print("SSIM of attacked image is: ", ssim(Y_new, Y_atk_gaussian))
+
+    Y_atk_jpeg_compression = jpeg_compression(Y_new, 20)
+    print("datatype of jpeg compressed image is: ", Y_atk_jpeg_compression.dtype)
+    # cv2.imshow("Median_atk.jpg", Y_atk_median)
+    W_dec = decode(Y_atk_jpeg_compression, len_w)
+    csv_file_path = 'jpeg_compressed_image.csv'
+    with open(csv_file_path, 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerows(Y_atk_jpeg_compression)
+    print("Watermark from attacked image: \n", W_dec)
+    print("JPEG_compression attack: ")
+    print("BCR of attacked image is: ", bcr(W, W_dec))
+    print("PSNR of attacked image is: ", psnr(Y_new, Y_atk_gaussian))
+    print("SSIM of attacked image is: ", ssim(Y_new, Y_atk_gaussian))
     
 
 def wm2dwt():
@@ -120,20 +151,27 @@ def wm2dwt():
     # cv2.imshow("gray_image_wm.jpeg", Y)
     Y = Y.astype(np.float64)
 
+    csv_file_path = 'original_image.csv'
+    with open(csv_file_path, 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerows(Y)
+    print("datatype of original image is: ", Y.dtype)
+
     alpha = args.alpha
     len_w = args.len_w
     L = args.l
-    Y_new, W_enc = encode(Y, alpha, len_w, L)
+    Y_new, W_enc = encode(Y, alpha, len_w)
+    print("datatype of Y_new image is: ", Y_new.dtype)
     print("Random watermark is:\n", W_enc)
 
     # cv2.imshow("watermarked_img.jpeg", Y_new.astype(np.uint8))
-    W_dec = decode(Y_new, len_w, L)
-    print("Decoded watermark is: ", W_dec)
-    print("BCR of watermarked image is: ", bcr(W_enc, W_dec))
-    print("PSNR of watermarked image is: ", psnr(Y, Y_new))
+    W_dec = decode(Y_new, len_w)
+    print("Decoded watermark is:\n", W_dec)
+    print("bcr is ", bcr(W_enc, W_dec))
+    print("psnr to Y is ", psnr(Y, Y_new))
 
-    atk_type = "filtering_attack"
-    attacks(Y_new, len_w, W_enc,atk_type)
+    atk_type = "filtering_attacks"
+    attacks(Y_new, len_w, W_enc, atk_type)
 
     cv2.waitKey(0)
     cv2.destroyAllWindows
