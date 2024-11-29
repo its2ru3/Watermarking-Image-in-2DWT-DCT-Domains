@@ -52,16 +52,17 @@ def bcr(W: np.ndarray, W_: np.ndarray) -> float:
     z = len(W)
     BCR = 0
     for i in range(z):
-        BCR += 1 - (W[i] ^ W_[i])  # Increment if bits match (XOR result is 0)
+        if(W[i]==W_[i]):
+            BCR += 1
 
     BCR_percentage = (BCR * 100) / z  # Convert to percentage
     return BCR_percentage
 
-# Example usage
-z = 128
-W = np.random.choice([0, 1], size=z)
-W_ = np.random.choice([0, 1], size=z)
+# # Example usage
+# z = 128
+# W = np.random.choice([0, 1], size=z)
+# W_ = np.random.choice([0, 1], size=z)
 
-print(W)
-print(W_)
-print("BCR:", bcr(W, W_), "%")
+# print(W)
+# print(W_)
+# print("BCR:", bcr(W, W_), "%")

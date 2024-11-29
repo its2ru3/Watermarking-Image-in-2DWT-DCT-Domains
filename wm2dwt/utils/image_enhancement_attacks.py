@@ -46,7 +46,7 @@ cv.imshow('GammaCorrectedImage1', output_image_gammaCorrection1)
 output_image_gammaCorrection = gammaCorrection(img_watermarked, 1.5)
 cv.imshow('GammaCorrectedImage', output_image_gammaCorrection)
 
-""" Histogram Equalization
+""" Histogram Equalization (old)
 # def histogram_equalization(image):
 #     image_eq = np.array(image, dtype = np.uint8)
 #     histogram = np.zeros(256, dtype=np.int32)

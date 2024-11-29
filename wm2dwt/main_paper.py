@@ -10,34 +10,41 @@ import os
 # Read the image
 image_path = 'example-images\\4.1.03.tiff'  # Directly set the image path here
 img = cv2.imread(image_path)
+# cv2.imshow("original_image", img)
 
 # Convert to grayscale and double precision
 img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 cv2.imwrite('original_img.jpg', img_gray)
 img_double = np.double(img_gray) / 255.0
+cv2.imshow("original_gray_image", img_gray)
+cv2.imshow("original_255_gray_image", img_double)
 
 A = img_double  # Host image
-
+print("size of img_double: ", A.shape)
 # DWT Decomposition
 LLr, (LHr, HLr, HHr) = pywt.dwt2(A, 'db1')
 LLr2, (LHr2, HLr2, HHr2) = pywt.dwt2(LLr, 'db1')
+ 
 
 I = LLr2
 sizeofllr = I.shape  # Subband size
-
+print("size of LLr2 ", sizeofllr)
 b = 255  # Length of watermark
 wp = np.random.randint(-2, 2, b)
-
+print("wp is ", wp)
 w = np.where(wp > -1, 1, -1)
 wt = I
-
+print("w is ", w)
 # Random location selection
 n = 1
 m = np.arange(2, b+2)
+print("m is ", m)
 Top = np.zeros((n, len(m)))
+print("Top is ", Top)
 for o in range(n):
     Top[o, :] = np.random.permutation(m)
 
+print("new Top is ", Top)
 number = Top
 numbernew = Top
 r, c = wt.shape
@@ -110,6 +117,9 @@ for i in range(1, n):
 preoriginalX = pywt.idwt2((inz, (LHr2, HLr2, HHr2)), 'db1')
 originalX = pywt.idwt2((preoriginalX, (LHr, HLr, HHr)), 'db1')
 
+cv2.imshow("wm_image", originalX)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
 # PSNR Function
 def psnr(original, compressed):
     mse = np.mean((original - compressed) ** 2)
