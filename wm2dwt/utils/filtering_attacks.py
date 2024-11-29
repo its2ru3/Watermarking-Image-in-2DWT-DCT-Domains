@@ -37,7 +37,7 @@ def medianFilter(Y_new):
 # Gaussian Filter (mask size = 3X3)
 def gaussianFilter1(Y_new):
     temp_img = np.copy(Y_new)
-    temp_img = temp_img.astype(np.float32)/255.0
+    temp_img = temp_img/255.0
     kernel = np.array([[1/16,2/16,1/16],
                        [2/16,4/16,2/16],
                        [1/16,2/16,1/16]])
@@ -48,7 +48,7 @@ def gaussianFilter1(Y_new):
 # Gaussian Filter (mask size = 5X5)
 def gaussianFilter2(Y_new):
     temp_img = np.copy(Y_new)
-    temp_img = temp_img.astype(np.float32)/255.0
+    temp_img = temp_img/255.0
     kernel = np.array([[1/273,4/273,6/273,4/273,1/273],
                        [4/273,16/273,24/273,16/273,4/273],
                        [6/273,24/273,36/273,24/273,6/273],
