@@ -6,8 +6,11 @@ from utils.zig_zag import *
 from utils.dct import *
 from utils.dwt import *
 from utils.performance_metrices import *
+from utils.filtering_attacks import *
+from utils.geometrical_attacks import *
+from utils.image_enhancement_attacks import *
 
-def encode(Y, alpha, len_w, L):
+def encode(Y, alpha, len_w, L=2):
     m,n = Y.shape
     dwt_2l = dwt(Y, L) 
     ll2 = dwt_2l[0:m//4, 0:n//4]
@@ -21,8 +24,9 @@ def encode(Y, alpha, len_w, L):
     W = np.random.choice([1,-1], size=len_w)
     v1_w=np.copy(dct_v1)
     v2_w=np.copy(dct_v2)
-    v1_w[-len_w:] = 0.5*(dct_v1[-len_w:] + dct_v2[-len_w:]) + alpha*W
-    v2_w[-len_w:] = 0.5*(dct_v1[-len_w:] + dct_v2[-len_w:]) - alpha*W
+    #here
+    v1_w[:len_w] = 0.5*(dct_v1[:len_w] + dct_v2[:len_w]) + alpha*W
+    v2_w[:len_w] = 0.5*(dct_v1[:len_w] + dct_v2[:len_w]) - alpha*W
     idct_v1 = idct(v1_w)
     idct_v2 = idct(v2_w)
     ll2_and_zig_zag_new = np.zeros(2*z)
@@ -34,7 +38,7 @@ def encode(Y, alpha, len_w, L):
     Y_new = idwt(dwt_2l, L)
     return Y_new, W
 
-def decode(Y_new, len_w, L):
+def decode(Y_new, len_w, L=2):
     m,n = Y_new.shape
     dwt_2l = dwt(Y_new, L) 
 
@@ -45,19 +49,19 @@ def decode(Y_new, len_w, L):
     v2 = ll2_and_zig_zag[1::2]
     dct_v1 = dct(v1)
     dct_v2 = dct(v2)
-
-    W_=dct_v1[-len_w:] - dct_v2[-len_w:]
+    #here
+    W_=dct_v1[:len_w] - dct_v2[:len_w]
     W_dec = np.where(W_ < 0, -1, np.where(W_ > 0, 1, 0))
     return W_dec
 
-# def attacks(img):
-#     Y = img
-#     Y_color = cv2.merge((Y, Cr, Cb))
-#     Y_new_color = cv2.merge((Y_new, Cr, Cb))
-#     bitPlaneRemoved_img = bitPlaneRemoval(Y_new_color.astype(np.unit8),2)
-#     bitPlaneRemoved_img_ = cv2.cvtColor(bitPlaneRemoved_img, cv2.COLOR_BGR2YCrCb)
-#     bitPlaneRemoved_img_gray, Cr, Cb = cv2.split(bitPlaneRemoved_img_)
-#     W_dec = decode(bitPlaneRemoved_img_gray)
+def attacks(Y_new, len_w, W, atk_type):
+    if(atk_type=="filtering_attack"):
+        Y_atk = avgFilter(Y_new)
+        cv2.imshow("avgFilter_atk.jpg", Y_atk)
+        W_dec = decode(Y_atk, len_w)
+    print("BCR of attacked image is: ", bcr(W, W_dec))
+    print("PSNR of attacked image is: ", psnr(Y_new, Y_atk))
+    print("SSIM of attacked image is: ", ssim(Y_new, Y_atk))
 
 def wm2dwt():
     # Set up argument parsing for a single argument (image path)
@@ -111,11 +115,20 @@ def wm2dwt():
 
     cv2.imshow("watermarked_img.jpeg", Y_new.astype(np.uint8))
     W_dec = decode(Y_new, len_w, L)
+<<<<<<< HEAD
     print("Decoded watermark is:\n", W_dec)
 
     print("bcr is ", bcr(W_enc, W_dec))
 
     print("psnr to Y is ", psnr(Y, Y_new))
+=======
+    print("Decoded watermark is: ", W_dec)
+    print("BCR of watermarked image is: ", bcr(W_enc, W_dec))
+    print("PSNR of watermarked image is: ", psnr(Y, Y_new))
+
+    attacks(Y_new, len_w, W_enc)
+
+>>>>>>> c8c5afc00992c2a85d9475e3b8b0ff9a97d76b89
     cv2.waitKey(0)
     cv2.destroyAllWindows
     
