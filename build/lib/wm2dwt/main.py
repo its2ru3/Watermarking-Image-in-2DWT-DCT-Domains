@@ -3,6 +3,7 @@
 import argparse
 import os
 import cv2, numpy as np
+<<<<<<< HEAD:my_project/main.py
 from utils.dwt import *
 from utils.zig_zag import *
 from utils.dct import *
@@ -14,6 +15,16 @@ def encode(Y):
     dwt_2l = dwt(Y, 2) 
     ll2 = dwt_2l[0:m//4, 0:n//4]
     ll2_and_zig_zag = zig_zag(ll2)
+=======
+from wm2dwt.utils.dwt import *
+from wm2dwt.utils.zig_zag import *
+from wm2dwt.utils.dct import *
+
+def wm2dwt():
+    # Set up argument parsing for a single argument (image path)
+    """parser = argparse.ArgumentParser(description="Command-line tool for image processing.")
+    parser.add_argument("image_path", type=str, help="Path to the image file")
+>>>>>>> 88cd908630d5c7710bea25c3309081f0b9b53198:build/lib/wm2dwt/main.py
 
     v1 = ll2_and_zig_zag[0::2]
     v2 = ll2_and_zig_zag[1::2]
@@ -60,8 +71,15 @@ def decode(Y_new):
 
 def main_():
     print("Image loaded successfully. Proceeding with processing...")
+<<<<<<< HEAD:my_project/main.py
     image = cv2.imread('example-images//4.2.07.tiff')
     image = cv2.resize(image, (512,512), interpolation=cv2.INTER_LINEAR)
+=======
+    
+    """
+    image = cv2.imread('example-images\\4.1.03.tiff')
+    # image = cv2.resize(image, (512,512), interpolation=cv2.INTER_LINEAR)
+>>>>>>> 88cd908630d5c7710bea25c3309081f0b9b53198:build/lib/wm2dwt/main.py
     print("size of image is : ", image.shape)
     ycrcb_img = cv2.cvtColor(image, cv2.COLOR_BGR2YCrCb)
     Y, Cr, Cb = cv2.split(ycrcb_img)
@@ -81,7 +99,17 @@ def main_():
     print("psnr to Y is ", psnr(Y_color, bitPlaneRemoved_img_gray))
     print("psnr to Y_new is ", psnr(Y_new_color, bitPlaneRemoved_img_gray))
     cv2.waitKey(0)
+<<<<<<< HEAD:my_project/main.py
     cv2.destroyAllWindows
 # Ensure main() runs when this script is called directly
 # if __name__ == "__main__":
 main_()
+=======
+    cv2.destroyAllWindows()
+
+    """
+    
+# Ensure wm2dwt() runs when this script is called directly
+if __name__ == "__main__":
+    wm2dwt()
+>>>>>>> 88cd908630d5c7710bea25c3309081f0b9b53198:build/lib/wm2dwt/main.py
