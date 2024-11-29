@@ -1,15 +1,16 @@
 import cv2 as cv
 import numpy as np
-img_watermarked = cv.imread('example-images\\4.1.03.tiff')
-print(img_watermarked.shape)
-img_watermarked = cv.resize(img_watermarked, (512,512), interpolation=cv.INTER_CUBIC)
-cv.imshow('Watermarked Image', img_watermarked)
+# img_watermarked = cv.imread('example-images\\4.1.03.tiff')
+# print(img_watermarked.shape)
+# img_watermarked = cv.resize(img_watermarked, (512,512), interpolation=cv.INTER_CUBIC)
+# cv.imshow('Watermarked Image', img_watermarked)
 
-img_watermarked = cv.resize(img_watermarked, (512,512), interpolation=cv.INTER_CUBIC)
-(height, width) = img_watermarked.shape[:2]
+# img_watermarked = cv.resize(img_watermarked, (512,512), interpolation=cv.INTER_CUBIC)
+# (height, width) = img_watermarked.shape[:2]
 
 # Bit-Plane Removal(x bits)
 def bitPlaneRemoval(img, bits):
+   (height, width) = img.shape[:2]
    temp_img= img
    for row in range(height):
       for column in range(width):
@@ -23,8 +24,8 @@ def bitPlaneRemoval(img, bits):
          temp_img[row, column] = blue, green, red
    return temp_img
 
-output_image_bitSlicing = bitPlaneRemoval(img_watermarked, 5)
-cv.imshow('BitPlaneRemoved', output_image_bitSlicing)
+# output_image_bitSlicing = bitPlaneRemoval(img_watermarked, 5)
+# cv.imshow('BitPlaneRemoved', output_image_bitSlicing)
 
 
 # Gamma Correction
@@ -41,10 +42,10 @@ def gammaCorrection(img, gamma):
    temp_img = (temp_img * 255).astype(np.uint8)     
    return temp_img
 
-output_image_gammaCorrection1 = gammaCorrection(img_watermarked, 0.5)
-cv.imshow('GammaCorrectedImage1', output_image_gammaCorrection1)
-output_image_gammaCorrection = gammaCorrection(img_watermarked, 1.5)
-cv.imshow('GammaCorrectedImage', output_image_gammaCorrection)
+# output_image_gammaCorrection1 = gammaCorrection(img_watermarked, 0.5)
+# cv.imshow('GammaCorrectedImage1', output_image_gammaCorrection1)
+# output_image_gammaCorrection = gammaCorrection(img_watermarked, 1.5)
+# cv.imshow('GammaCorrectedImage', output_image_gammaCorrection)
 
 """ Histogram Equalization
 # def histogram_equalization(image):
@@ -84,7 +85,7 @@ def histogram_equalization(img):
    equalized_img = cv.cvtColor(ycrcb_img, cv.COLOR_YCrCb2BGR)
    return equalized_img
 
-cv.imshow("hist_equ_img.jpg", histogram_equalization(img_watermarked))
+# cv.imshow("hist_equ_img.jpg", histogram_equalization(img_watermarked))
 # Laplacian Sharpening
 def lapSharpening(img):
     blue, green, red = cv.split(img)
@@ -99,6 +100,6 @@ def lapSharpening(img):
     return filtered_image
 
 # sharpened_image = lapSharpening(img_watermarked)
-# cv.imshow('SharpenedImage', sharpened_image)    
-cv.waitKey(0)
-cv.destroyAllWindows()
+# # cv.imshow('SharpenedImage', sharpened_image)    
+# cv.waitKey(0)
+# cv.destroyAllWindows()
