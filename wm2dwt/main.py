@@ -100,21 +100,21 @@ def wm2dwt():
     print("size of image is : ", image.shape)
     ycrcb_img = cv2.cvtColor(image, cv2.COLOR_BGR2YCrCb)
     Y, Cr, Cb = cv2.split(ycrcb_img)
+    cv2.imshow("gray_image_wm.jpeg", Y)
     Y = Y.astype(np.float64)
-    # cv2.imshow("gray_image_wm.jpeg", Y)
 
     alpha = args.alpha
     len_w = args.len_w
     L = args.l
     Y_new, W_enc = encode(Y, alpha, len_w, L)
-    print("Random watermark is: ", W_enc)
+    print("Random watermark is:\n", W_enc)
 
-    # cv2.imshow("watermarked_img.jpeg", Y_new.astype(np.uint8))
+    cv2.imshow("watermarked_img.jpeg", Y_new.astype(np.uint8))
     W_dec = decode(Y_new, len_w, L)
-    print("Decoded watermark is: ", W_dec)
+    print("Decoded watermark is:\n", W_dec)
 
     print("bcr is ", bcr(W_enc, W_dec))
-   
+
     print("psnr to Y is ", psnr(Y, Y_new))
     cv2.waitKey(0)
     cv2.destroyAllWindows
