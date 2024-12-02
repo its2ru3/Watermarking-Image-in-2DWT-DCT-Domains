@@ -1,3 +1,3 @@
 # __init__.py
 
-from .main2 import wm2dwt
+from .mymain2 import wm2dwt

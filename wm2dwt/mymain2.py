@@ -19,7 +19,7 @@ from scipy.ndimage import convolve
 alpha=1
 current_path = str(os.path.dirname(__file__))
 
-image = 'boat.512.tiff'   
+image = '5.2.08.tiff'   
 watermark = 'Untitled.png' 
 
 ###############################################################################################################
@@ -33,6 +33,7 @@ def getGrayImage(img_name, size):
     Y, Cr, Cb = cv2.split(ycrcb_img)
 
     return Y.astype(np.float64), Cr, Cb
+
 
 ##############################################################################################################
 
@@ -89,7 +90,7 @@ def decodeWatermark(Y_ll1, z):
 
 #############################################################################################################
 
-def saveWatermark(Y_w, level=1):
+def getWatermark(Y_w, level=1):
     Y_w_dwt = dwt(Y_w,level)
     Y_w_dct = blockDct(Y_w_dwt[0:1024,0:1024])
     W = decodeWatermark(Y_w_dct, 128)
@@ -97,7 +98,7 @@ def saveWatermark(Y_w, level=1):
     # print(np.max(watermark_array))
     for i in range(W.shape[0]):
         for j in range(W.shape[1]):
-            if W[i,j]<-1 or W[i,j]>1:
+            if W[i,j]<-2 or W[i,j]>2:
                 W[i,j]=255
             else:
                 W[i,j]=0
@@ -105,20 +106,18 @@ def saveWatermark(Y_w, level=1):
     W = np.uint8(W)
 
     # Save the recovered watermark
-    cv2.imwrite("recovered_Watermark.jpg", W)
+    return W
 
 ###############################################################################################################
 
 def print_image_from_array(Y, img_name,base_name):
-    # Save the processed image
-    # base_name = os.path.splitext(img_name)[0]
 
     # Define the directory path
     directory_path = './dataset/' + base_name
     os.makedirs(directory_path, exist_ok=True)  # Create the directory if it doesn't exist
 
     # Define the full file path with _gray added to the name
-    file_path = os.path.join(directory_path, img_name + '_gray.jpg')
+    file_path = os.path.join(directory_path, img_name + '.jpg')
 
     # Save the image
     cv2.imwrite(file_path, Y)
@@ -147,23 +146,23 @@ def w2d(img):
 
     Y_w = idwt(Y_dwt, level)
 
+    #######################################################################
+
+    Y_atk=medianFilter(Y_w)
+    W_dec=getWatermark(Y_atk,1)
     base_name = os.path.splitext(image)[0]
+    #orignal image
     print_image_from_array(Y,image,base_name)
-    print_image_from_array(Y_w,image+'_watermarked',base_name)
-    print_image_from_array(W,"watermark",base_name)
+    #watermarked image
+    print_image_from_array(Y_w,image+'_watermark',base_name)
+    #watermark
+    print_image_from_array(W,'watermark',base_name)
+    #attacked image
+    print_image_from_array(Y_atk,'attacked_image',base_name)
+    #decoded watermark after attack
+    print_image_from_array(W_dec,'attacked_watermark',base_name)
+    
 
-    # size = 20
-    # sigma = 2
-    # gaussian_filter = gaussianFilter(size, sigma)
-
-# Step 3: Apply the filter to the image using convolution
-    # Y_atks = convolve(Y_w, gaussian_filter)
-    # # print(type(image_array))
-    # y=convolve(Y, gaussian_filter)
-    # print_image_from_array(W,'orig.jpg')
-    # print_image_from_array(Y_atks,'attacked_image.jpg')
-
-    # saveWatermark(Y_atks, level=level)
 
 # Run the watermark embedding and recovery
 w2d("test")
