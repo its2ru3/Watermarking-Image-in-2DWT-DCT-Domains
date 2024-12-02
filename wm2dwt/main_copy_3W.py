@@ -2,6 +2,7 @@
 import argparse
 import os, csv
 import cv2, numpy as np
+from scipy.stats import mode
 from utils.zig_zag import *
 from utils.dct import *
 from utils.dwt import *
@@ -26,6 +27,8 @@ def encode(Y, alpha, len_w, L=2):
     dct_v2 = dct(v2)
     z = dct_v1.shape[0] 
     W = np.random.choice([1,-1], size=len_w)
+    W = np.repeat(W, 3)
+    len_w = 3*len_w
     v1_w=np.copy(dct_v1)
     v2_w=np.copy(dct_v2)
     #here
@@ -62,6 +65,7 @@ def decode(Y_new, len_w, L=2):
     dct_v1 = dct(v1)
     dct_v2 = dct(v2)
     #here
+    len_w = 3*len_w
     W_=dct_v1[-len_w:] - dct_v2[-len_w:]
     # print("watermark unnormalised is: \n", W_)
     W_dec = np.where(W_ <= 0, -1, np.where(W_ > 0, 1, 0))
@@ -113,7 +117,8 @@ def attacks(Y_new, len_w, W, atk_type):
     Y_atk_gamma_corr = gammaCorrection(Y_new, 0.5)
     print("datatype of gamma correction image is: ", Y_atk_gamma_corr.dtype)
     # cv2.imshow("Median_atk.jpg", Y_atk_median)
-    W_dec = decode(Y_atk_gamma_corr, len_w)
+    W_dec_ = decode(Y_atk_gamma_corr, len_w).reshape(-1,3)
+    W_dec = mode(W_dec_, axis=1).mode.flatten()
     print("Watermark from attacked image: \n", W_dec)
     print("BCR of attacked image is: ", bcr(W, W_dec))
     print("PSNR of attacked image is: ", psnr(Y_new, Y_atk_gamma_corr))
@@ -121,7 +126,8 @@ def attacks(Y_new, len_w, W, atk_type):
 
     print("\n Gaussian noise ")
     Y_atk_gaussian = gaussian_noise_adder(Y_new, 0.0005)
-    W_dec = decode(Y_atk_gaussian, len_w)
+    W_dec_ = decode(Y_atk_gaussian, len_w).reshape(-1,3)
+    W_dec = mode(W_dec_, axis=1).mode.flatten()
     print("Watermark from attacked image: \n", W_dec)
     print("BCR of attacked image is: ", bcr(W, W_dec))
     print("PSNR of attacked image is: ", psnr(Y_new, Y_atk_gaussian))
@@ -184,18 +190,22 @@ def wm2dwt():
     alpha = args.alpha
     len_w = args.len_w
     L = args.l
-    Y_new, W_enc = encode(Y, alpha, len_w)
+    Y_new, W_enc_ = encode(Y, alpha, len_w)
+    W_enc = W_enc_[::3]
     # print("datatype of Y_new image is: ", Y_new.dtype)
-    print("Random watermark is:\n", W_enc)
+    # print("Random watermark is:\n", W_enc)
 
     cv2.imwrite("watermarked_img.jpeg", cv2.cvtColor(cv2.merge([Y_new.astype(np.uint8), Cr, Cb]), cv2.COLOR_YCrCb2BGR))
-    W_dec = decode(Y_new, len_w)
-    print("Decoded watermark is:\n", W_dec)
+    W_dec_ = decode(Y_new, len_w).reshape(-1,3)
+    W_dec = mode(W_dec_, axis=1).mode.flatten()
+    # print("Decoded watermark is:\n", W_dec)
     print("bcr is ", bcr(W_enc, W_dec))
     print("psnr to Y is ", psnr(Y, Y_new))
 
     atk_type = "filtering_attacks"
-    # attacks(Y_new, len_w, W_enc, atk_type)
+    attacks(Y_new, len_w, W_enc, atk_type)
+    print("Watermark original is: \n", W_enc)
+
 
     cv2.waitKey(0)
     cv2.destroyAllWindows
