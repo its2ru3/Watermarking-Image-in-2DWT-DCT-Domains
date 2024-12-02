@@ -1,7 +1,4 @@
-import numpy as np
-import pywt
-import os
-import cv2
+import os, cv2, numpy as np
 from utils.zig_zag import *
 from utils.dct import *
 from utils.dwt import *
@@ -42,12 +39,6 @@ def getGrayImage(img_name, size):
     cv2.imwrite(file_path, Y)
 
     return Y.astype(np.float64), Cr, Cb
-
-# # Perform 2D Discrete Wavelet Transform (DWT) and return coefficients
-# def process_coefficients(imArray, model, level):
-#     coeffs = pywt.wavedec2(data=imArray, wavelet=model, level=level)
-#     coeffs_H = list(coeffs)  # Convert to a mutable list
-#     return coeffs_H
 
 # Embed the watermark into the DCT coefficients of the original image
 def embedWatermark(W, Y):
@@ -117,25 +108,7 @@ def saveWatermark(Y_w, level=1):
     # Save the recovered watermark
     cv2.imwrite("recovered_Watermark.jpg", W)
 
-# # Save an image from a NumPy array
-# def print_image_from_array(image_array, name):
-#     image_array_copy = image_array.clip(0, 255)  # Clip values to valid range
-#     image_array_copy = image_array_copy.astype("uint8")
-#     img = Image.fromarray(image_array_copy)
-#     img.save('./result/' + name)
 
-
-
-# def gaussianFilter(size, sigma):
-#     kernel = np.fromfunction(
-#         lambda x, y: (1/ (2 * np.pi * sigma ** 2)) * np.exp(
-#             - ((x - (size - 1) / 2) ** 2 + (y - (size - 1) / 2) ** 2) / (2 * sigma ** 2)
-#         ),
-#         (size, size),
-#     )
-#     return kernel / np.sum(kernel)
-
-# Main function to apply watermark embedding and recovery
 def w2d(img):
     model = 'haar'
     level = 1
@@ -159,19 +132,6 @@ def w2d(img):
     Y_w = idwt(Y_dwt, level)
 
     cv2.imwrite('image_with_watermark.jpg', Y_w)
-
-#     size = 10
-#     sigma = 1
-#     gaussian_filter = gaussianFilter(size, sigma)
-
-# # Step 3: Apply the filter to the image using convolution
-#     Y_atks = convolve(image_array_H, gaussian_filter)
-#     # print(type(image_array))
-#     y=convolve(Y, gaussian_filter)
-#     print_image_from_array(W,'orig.jpg')
-#     print_image_from_array(Y_atks,'attacked_image.jpg')
-
-#     recover_watermark(image_array=Y_atks, model=model, level=level)
 
 # Run the watermark embedding and recovery
 w2d("test")
