@@ -1,7 +1,7 @@
 import cv2 as cv
 import numpy as np
 
-#Rotation
+#Rotation(A custom rotate function which allows users to input the rotation angle )
 def rotate_func(Y_new, rotation_angle, rotation_Point=None):
     (height, width) = Y_new.shape[:2]
     temp_img = np.copy(Y_new)
