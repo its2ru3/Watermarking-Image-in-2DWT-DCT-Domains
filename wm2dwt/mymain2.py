@@ -98,7 +98,7 @@ def getWatermark(Y_w, level=1):
     # print(np.max(watermark_array))
     for i in range(W.shape[0]):
         for j in range(W.shape[1]):
-            if W[i,j]<-2 or W[i,j]>2:
+            if W[i,j]<-4.5 or W[i,j]> 4.5:
                 W[i,j]=255
             else:
                 W[i,j]=0
