@@ -11,16 +11,19 @@ from utils.geometrical_attacks import *
 from utils.image_enhancement_attacks import *
 from utils.noise_attacks import *
 from utils.jpeg_compression import *
+from PIL import Image
+from scipy.ndimage import convolve
 
-# Get the current path of the script
+##############################################################################################################
+
 alpha=1
 current_path = str(os.path.dirname(__file__))
 
-# File names for the input image and watermark
-image = '4.1.03.tiff'   
+image = 'boat.512.tiff'   
 watermark = 'Untitled.png' 
 
-# Convert an image to grayscale, resize it, and return as a NumPy array
+###############################################################################################################
+
 def getGrayImage(img_name, size):
     # Open and resize the image
     img = cv2.imread('./dataset/' + img_name)
@@ -28,28 +31,11 @@ def getGrayImage(img_name, size):
     # Convert to grayscale
     ycrcb_img = cv2.cvtColor(img, cv2.COLOR_BGR2YCrCb)
     Y, Cr, Cb = cv2.split(ycrcb_img)
-    # Save the processed image
-    base_name = os.path.splitext(img_name)[0]
-
-    # Define the directory path
-    directory_path = './dataset/' + base_name
-    os.makedirs(directory_path, exist_ok=True)  # Create the directory if it doesn't exist
-
-    # Define the full file path with _gray added to the name
-    file_path = os.path.join(directory_path, img_name + '_gray.jpg')
-
-    # Save the image
-    cv2.imwrite(file_path, Y)
 
     return Y.astype(np.float64), Cr, Cb
 
-# # Perform 2D Discrete Wavelet Transform (DWT) and return coefficients
-# def process_coefficients(imArray, model, level):
-#     coeffs = pywt.wavedec2(data=imArray, wavelet=model, level=level)
-#     coeffs_H = list(coeffs)  # Convert to a mutable list
-#     return coeffs_H
+##############################################################################################################
 
-# Embed the watermark into the DCT coefficients of the original image
 def embedWatermark(W, Y):
     W_flat = W.ravel()  # Flatten the watermark array
     ind = 0
@@ -65,7 +51,8 @@ def embedWatermark(W, Y):
 
     return Y
 
-# Apply 2D DCT on 8x8 blocks of an image
+##############################################################################################################
+
 def blockDct(Y):
     size = len(Y)
     Y_dct = np.empty((size, size))
@@ -77,7 +64,8 @@ def blockDct(Y):
             Y_dct[i:i+8, j:j+8] = subdct
     return Y_dct
 
-# Apply 2D inverse DCT on 8x8 blocks
+###############################################################################################################
+
 def invDct(Y_dct):
     size = len(Y_dct)
     Y_idct = np.empty((size, size))
@@ -88,7 +76,8 @@ def invDct(Y_dct):
             Y_idct[i:i+8, j:j+8] = subidct
     return Y_idct
 
-# Extract the watermark from the DCT coefficients
+##############################################################################################################
+
 def decodeWatermark(Y_ll1, z):
     subwatermarks = []
     for x in range(0, len(Y_ll1), 8):
@@ -98,44 +87,44 @@ def decodeWatermark(Y_ll1, z):
     W = np.array(subwatermarks).reshape(z, z)
     return W
 
-# Recover the watermark from the watermarked image
+#############################################################################################################
+
 def saveWatermark(Y_w, level=1):
     Y_w_dwt = dwt(Y_w,level)
-    Y_w_dct = blockDct(Y_w_dwt)
+    Y_w_dct = blockDct(Y_w_dwt[0:1024,0:1024])
     W = decodeWatermark(Y_w_dct, 128)
     # print(np.min(watermark_array))
     # print(np.max(watermark_array))
     for i in range(W.shape[0]):
         for j in range(W.shape[1]):
-            if W[i,j]<5 or W[i,j]>40:
-                W[i,j]=0
-            else:
+            if W[i,j]<-1 or W[i,j]>1:
                 W[i,j]=255
+            else:
+                W[i,j]=0
     
     W = np.uint8(W)
 
     # Save the recovered watermark
     cv2.imwrite("recovered_Watermark.jpg", W)
 
-# # Save an image from a NumPy array
-# def print_image_from_array(image_array, name):
-#     image_array_copy = image_array.clip(0, 255)  # Clip values to valid range
-#     image_array_copy = image_array_copy.astype("uint8")
-#     img = Image.fromarray(image_array_copy)
-#     img.save('./result/' + name)
+###############################################################################################################
 
+def print_image_from_array(Y, img_name,base_name):
+    # Save the processed image
+    # base_name = os.path.splitext(img_name)[0]
 
+    # Define the directory path
+    directory_path = './dataset/' + base_name
+    os.makedirs(directory_path, exist_ok=True)  # Create the directory if it doesn't exist
 
-# def gaussianFilter(size, sigma):
-#     kernel = np.fromfunction(
-#         lambda x, y: (1/ (2 * np.pi * sigma ** 2)) * np.exp(
-#             - ((x - (size - 1) / 2) ** 2 + (y - (size - 1) / 2) ** 2) / (2 * sigma ** 2)
-#         ),
-#         (size, size),
-#     )
-#     return kernel / np.sum(kernel)
+    # Define the full file path with _gray added to the name
+    file_path = os.path.join(directory_path, img_name + '_gray.jpg')
 
-# Main function to apply watermark embedding and recovery
+    # Save the image
+    cv2.imwrite(file_path, Y)
+
+#############################################################################################################
+
 def w2d(img):
     model = 'haar'
     level = 1
@@ -158,20 +147,23 @@ def w2d(img):
 
     Y_w = idwt(Y_dwt, level)
 
-    cv2.imwrite('image_with_watermark.jpg', Y_w)
+    base_name = os.path.splitext(image)[0]
+    print_image_from_array(Y,image,base_name)
+    print_image_from_array(Y_w,image+'_watermarked',base_name)
+    print_image_from_array(W,"watermark",base_name)
 
-#     size = 10
-#     sigma = 1
-#     gaussian_filter = gaussianFilter(size, sigma)
+    # size = 20
+    # sigma = 2
+    # gaussian_filter = gaussianFilter(size, sigma)
 
-# # Step 3: Apply the filter to the image using convolution
-#     Y_atks = convolve(image_array_H, gaussian_filter)
-#     # print(type(image_array))
-#     y=convolve(Y, gaussian_filter)
-#     print_image_from_array(W,'orig.jpg')
-#     print_image_from_array(Y_atks,'attacked_image.jpg')
+# Step 3: Apply the filter to the image using convolution
+    # Y_atks = convolve(Y_w, gaussian_filter)
+    # # print(type(image_array))
+    # y=convolve(Y, gaussian_filter)
+    # print_image_from_array(W,'orig.jpg')
+    # print_image_from_array(Y_atks,'attacked_image.jpg')
 
-#     recover_watermark(image_array=Y_atks, model=model, level=level)
+    # saveWatermark(Y_atks, level=level)
 
 # Run the watermark embedding and recovery
 w2d("test")
