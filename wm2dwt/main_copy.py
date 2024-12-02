@@ -2,6 +2,8 @@
 import argparse
 import os, csv
 import cv2, numpy as np
+import pywt
+from scipy.fft import dct as DCT, idct as iDCT
 from utils.zig_zag import *
 from utils.dct import *
 from utils.dwt import *
@@ -14,16 +16,23 @@ from utils.jpeg_compression import *
 
 def encode(Y, alpha, len_w, L=2):
     m,n = Y.shape
-    dwt_2l = dwt(Y, L) 
+    img_double = np.double(Y) / 255.0
+    A = img_double  # Host image
+    print("size of img_double: ", A.shape)
+    # DWT Decomposition
+    LLr, (LHr, HLr, HHr) = pywt.dwt2(A, 'db1')
+    LLr2, (LHr2, HLr2, HHr2) = pywt.dwt2(LLr, 'db1')
+
+    dwt_2l = LLr2
     ll2 = dwt_2l[0:m//2**L, 0:n//2**L]
     ll2_and_zig_zag = zig_zag(ll2)
 
     v1 = ll2_and_zig_zag[0::2]
     print("v1 for the image is : \n", v1)
     v2 = ll2_and_zig_zag[1::2]
-    dct_v1 = dct(v1)
+    dct_v1 = DCT(v1, type=2, norm='ortho')
     print("DCT coeffecient of v1 is: \n", dct_v1)
-    dct_v2 = dct(v2)
+    dct_v2 = DCT(v2, type=2, norm='ortho')
     z = dct_v1.shape[0] 
     W = np.random.choice([1,-1], size=len_w)
     v1_w=np.copy(dct_v1)
@@ -33,34 +42,41 @@ def encode(Y, alpha, len_w, L=2):
     v2_w[-len_w:] = 0.5*(dct_v1[-len_w:] + dct_v2[-len_w:]) - alpha*W
     print("v1_w is \n", v1_w)
 
-
     # v1_w[-len_w:] = 0.5*(dct_v1[-len_w:] + dct_v2[-len_w:]) + alpha*W
     # v2_w[-len_w:] = 0.5*(dct_v1[-len_w:] + dct_v2[-len_w:]) - alpha*W
 
-    idct_v1 = idct(v1_w)
+    idct_v1 = iDCT(v1_w, type=2, norm='ortho')
     print("idct_v1 is \n", idct_v1)
-    idct_v2 = idct(v2_w)
-
+    idct_v2 = iDCT(v2_w, type=2, norm='ortho')
     ll2_and_zig_zag_new = np.zeros(2*z)
     ll2_and_zig_zag_new[0::2]=idct_v1
     ll2_and_zig_zag_new[1::2]=idct_v2
 
     ll2_new = zag_zig(ll2_and_zig_zag_new, m//2**L, n//2**L)
-    dwt_2l[0:m//2**L, 0:n//2**L] = ll2_new
-    Y_new = idwt(dwt_2l, L)
+    inz = ll2_new    
+
+    preoriginalX = pywt.idwt2((inz, (LHr2, HLr2, HHr2)), 'db1')
+    Y_new = pywt.idwt2((preoriginalX, (LHr, HLr, HHr)), 'db1')
     return Y_new, W
 
 def decode(Y_new, len_w, L=2):
     m,n = Y_new.shape
-    dwt_2l = dwt(Y_new, L) 
+    img_double = np.double(Y) / 255.0
+    A = img_double  # Host image
+    print("size of img_double: ", A.shape)
+    # DWT Decomposition
+    LLr, (LHr, HLr, HHr) = pywt.dwt2(A, 'db1')
+    LLr2, (LHr2, HLr2, HHr2) = pywt.dwt2(LLr, 'db1')
+
+    dwt_2l = LLr2
 
     ll2 = dwt_2l[0:m//2**L, 0:n//2**L]
     ll2_and_zig_zag = zig_zag(ll2)
 
     v1 = ll2_and_zig_zag[0::2]
     v2 = ll2_and_zig_zag[1::2]
-    dct_v1 = dct(v1)
-    dct_v2 = dct(v2)
+    dct_v1 = DCT(v1, type=2, norm='ortho')
+    dct_v2 = DCT(v2, type=2, norm='ortho')
     #here
     W_=dct_v1[-len_w:] - dct_v2[-len_w:]
     # print("watermark unnormalised is: \n", W_)
@@ -68,47 +84,6 @@ def decode(Y_new, len_w, L=2):
     return W_dec
 
 def attacks(Y_new, len_w, W, atk_type):
-    # Y_atks = {}
-    # W_decs = {}
-    # if(atk_type=="filtering_attacks"):
-    #     Y_atks["avgFilter"] = avgFilter(Y_new)
-    #     W_decs["avgFilter"] = decode(Y_atks["avgFilter"], len_w)
-
-    #     Y_atks["medianFilter"] = medianFilter(Y_new)
-    #     W_decs["medianFilter"] = decode(Y_atks["medianFilter"], len_w)
-
-    #     for index, (key, value) in enumerate(Y_atks.items()):
-    #         print("\n", key)
-    #         print("Watermark from attacked image: \n", W_decs[key])
-    #         print("BCR of attacked image is: ", bcr(W, W_decs[key]))
-    #         print("PSNR of attacked image is: ", psnr(Y_new, value))
-    #         print("SSIM of attacked image is: ", ssim(Y_new, value))
-    
-    # Y_atk_gaussian = gaussianFilter2(Y_new)
-    # print("datatype of gaussian attacked image is: ", Y_atk_gaussian.dtype)
-    # # cv2.imshow("Median_atk.jpg", Y_atk_median)
-    # W_dec = decode(Y_atk_gaussian, len_w)
-    # csv_file_path = 'gaussian_atked_image.csv'
-    # # with open(csv_file_path, 'w', newline='') as file:
-    # #     writer = csv.writer(file)
-    # #     writer.writerows(Y_atk_gaussian)
-    # print("Watermark from attacked image: \n", W_dec)
-    # print("Gaussian attack: ")
-    # print("BCR of attacked image is: ", bcr(W, W_dec))
-    # print("PSNR of attacked image is: ", psnr(Y_new, Y_atk_gaussian))
-    # print("SSIM of attacked image is: ", ssim(Y_new, Y_atk_gaussian))
-
-    # Y_atk_jpeg_compression = jpeg_compression(Y_new, 20)
-    # print("datatype of jpeg compressed image is: ", Y_atk_jpeg_compression.dtype)
-    # # cv2.imshow("Median_atk.jpg", Y_atk_median)
-    # W_dec = decode(Y_atk_jpeg_compression, len_w)
-    # csv_file_path = 'jpeg_compressed_image.csv'
-    # print("Watermark from attacked image: \n", W_dec)
-    # print("JPEG_compression attack: ")
-    # print("BCR of attacked image is: ", bcr(W, W_dec))
-    # print("PSNR of attacked image is: ", psnr(Y_new, Y_atk_gaussian))
-    # print("SSIM of attacked image is: ", ssim(Y_new, Y_atk_gaussian))
-
     print("\n Gamma Correction")
     Y_atk_gamma_corr = gammaCorrection(Y_new, 0.5)
     print("datatype of gamma correction image is: ", Y_atk_gamma_corr.dtype)
