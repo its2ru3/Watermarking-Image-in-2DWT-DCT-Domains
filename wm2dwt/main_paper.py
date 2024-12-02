@@ -24,7 +24,7 @@ print("size of img_double: ", A.shape)
 # DWT Decomposition
 LLr, (LHr, HLr, HHr) = pywt.dwt2(A, 'db1')
 LLr2, (LHr2, HLr2, HHr2) = pywt.dwt2(LLr, 'db1')
- 
+
 
 I = LLr2
 sizeofllr = I.shape  # Subband size
