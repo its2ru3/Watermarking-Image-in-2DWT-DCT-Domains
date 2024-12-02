@@ -94,11 +94,11 @@ def getWatermark(Y_w, level=1):
     Y_w_dwt = dwt(Y_w,level)
     Y_w_dct = blockDct(Y_w_dwt[0:1024,0:1024])
     W = decodeWatermark(Y_w_dct, 128)
-    # print(np.min(watermark_array))
-    # print(np.max(watermark_array))
+    print(np.min(W))
+    print(np.max(W))
     for i in range(W.shape[0]):
         for j in range(W.shape[1]):
-            if W[i,j]<-4.5 or W[i,j]> 4.5:
+            if W[i,j]< -50 or W[i,j]> 50:
                 W[i,j]=255
             else:
                 W[i,j]=0
@@ -148,7 +148,7 @@ def w2d(img):
 
     #######################################################################
 
-    Y_atk=medianFilter(Y_w)
+    Y_atk=jpeg_compression(Y_w,20)
     W_dec=getWatermark(Y_atk,1)
     base_name = os.path.splitext(image)[0]
     #orignal image
@@ -160,7 +160,7 @@ def w2d(img):
     #attacked image
     print_image_from_array(Y_atk,'attacked_image',base_name)
     #decoded watermark after attack
-    print_image_from_array(W_dec,'attacked_watermark',base_name)
+    print_image_from_array(medianFilter(W_dec),'attacked_watermark',base_name)
     
 
 
