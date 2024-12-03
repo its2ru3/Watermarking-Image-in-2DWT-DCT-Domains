@@ -1,5 +1,4 @@
 import numpy as np
-import pywt
 import os
 import cv2
 from utils.zig_zag import *
@@ -11,8 +10,6 @@ from utils.geometrical_attacks import *
 from utils.image_enhancement_attacks import *
 from utils.noise_attacks import *
 from utils.jpeg_compression import *
-from PIL import Image
-from scipy.ndimage import convolve
 
 ##############################################################################################################
 
@@ -20,7 +17,7 @@ alpha=1
 current_path = str(os.path.dirname(__file__))
 
 image = '5.2.08.tiff'   
-watermark = 'Untitled.png' 
+watermark = 'Watermark_original.png' 
 
 ###############################################################################################################
 
@@ -124,7 +121,7 @@ def print_image_from_array(Y, img_name,base_name):
 
 #############################################################################################################
 
-def w2d(img):
+def wm2dwt(img):
     model = 'haar'
     level = 1
     size = 2048
@@ -165,4 +162,4 @@ def w2d(img):
 
 
 # Run the watermark embedding and recovery
-w2d("test")
+wm2dwt("test")
